@@ -1,6 +1,6 @@
 
 
-class AddZipCode(object):
+class GetZipCode(object):
     def __new__(cls, *args, **kwargs):
         return cls.__call__(*args, **kwargs)
     @classmethod
