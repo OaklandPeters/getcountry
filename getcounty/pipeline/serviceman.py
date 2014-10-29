@@ -3,6 +3,32 @@ from ..extern.clsproperty import VProperty
 
 __all__ = ['ServiceMan']
 
+import functools
+import abc
+class DictKeyProperty(VProperty):
+#    __metaclass__ = abc.ABCMeta
+    def __init__(self, title):
+        if not isinstance(title, basestring):
+            raise TypeError("'title' must be a basestring.")
+         
+        self.title = title
+        root = self
+         
+        def _get(self):
+            return self.data[root.title]
+        def _set(self, value):
+            self.data[root.title] = value
+        _del = None
+        _val = None
+        doc = "Column for '{0}'".format(title)
+         
+        super(DictKeyProperty, self).__init__(
+            _get, _set, _del, _val, doc
+        )
+    
+        
+
+
 
 
 class ServiceMan(collections.MutableMapping):
@@ -16,45 +42,52 @@ class ServiceMan(collections.MutableMapping):
     #--------------------------------------------------------------------------
     # Fields used as input to pipeline functions
     #--------------------------------------------------------------------------
-    @VProperty
-    class city(object):
-        """Column 'Home of Record City'."""
-        def _get(self):
-            return self.data['Home of Record City']
-    @VProperty
-    class county(object):
-        """Column 'Home of Record County'."""
-        def _get(self):
-            return self.data['Home of Record County']
-        def _set(self, value):
-            self.data['Home of Record County']
-    @VProperty
-    class state(object):
-        """Column 'Home of Record State'."""
-        def _get(self):
-            return self.data['Home of Record State']
+    city = DictKeyProperty('Home of Record City')
+    county = DictKeyProperty('Home of Record County')
+    state = DictKeyProperty('Home of Record State')
+    
+#     @VProperty
+#     class city(object):
+#         """Column 'Home of Record City'."""
+#         def _get(self):
+#             return self.data['Home of Record City']
+#     @VProperty
+#     class county(object):
+#         """Column 'Home of Record County'."""
+#         def _get(self):
+#             return self.data['Home of Record County']
+#         def _set(self, value):
+#             self.data['Home of Record County']
+#     @VProperty
+#     class state(object):
+#         """Column 'Home of Record State'."""
+#         def _get(self):
+#             return self.data['Home of Record State']
     
     #--------------------------------------------------------------------------
     # Fields used as output to pipeline functions
     #--------------------------------------------------------------------------
-    @VProperty
-    class zip(object):
-        """Zip-code. Column not found in raw data."""
-        def _get(self):
-            return self.data['ZIP Code']
-        def _set(self, value):
-            self.data['ZIP Code'] = value
-    
-    @VProperty
-    class county_id(object):
-        """ID Code for a county. Column not found in raw data."""
-        def _get(self):
-            return self.data['Code for Home of Record County']
-        def _set(self, value):
-            self.data['Code for Home of Record County'] = value
+    zip = DictKeyProperty('ZIP Code')
+    county_id = DictKeyProperty('Code for Home of Record County')
+#     @VProperty
+#     class zip(object):
+#         """Zip-code. Column not found in raw data."""
+#         def _get(self):
+#             return self.data['ZIP Code']
+#         def _set(self, value):
+#             self.data['ZIP Code'] = value
+#     
+#     @VProperty
+#     class county_id(object):
+#         """ID Code for a county. Column not found in raw data."""
+#         def _get(self):
+#             return self.data['Code for Home of Record County']
+#         def _set(self, value):
+#             self.data['Code for Home of Record County'] = value
 
-    
+    #--------------------------------------------------------------------------
     # Required MagicMethods
+    #--------------------------------------------------------------------------
     def __getitem__(self, key):
         return self.data[key]
     def __setitem__(self, key, value):

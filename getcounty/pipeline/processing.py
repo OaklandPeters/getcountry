@@ -16,12 +16,15 @@ Build Plan:
 from __future__ import absolute_import
 import csv
 import os
-import collections
 
-from getcountry.pipeline.getcountyid import GetCountyID
-from getcountry.pipeline.getcountyname import GetCountyName
-from getcountry.pipeline.getzipcode import GetZipCode
-from getcountry.pipeline.serviceman import ServiceMan
+# from getcountry.pipeline.getcountyid import GetCountyID
+# from getcountry.pipeline.getcountyname import GetCountyName
+# from getcountry.pipeline.getzipcode import GetZipCode
+# from getcountry.pipeline.serviceman import ServiceMan
+from .getcountyid import GetCountyID
+from .getcountyname import GetCountyName
+from .getzipcode import GetZipCode
+from .serviceman import ServiceMan
 
 
 
