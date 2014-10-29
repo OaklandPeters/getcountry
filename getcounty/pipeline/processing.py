@@ -19,13 +19,12 @@ import os
 
 # from getcountry.pipeline.getcountyid import GetCountyID
 # from getcountry.pipeline.getcountyname import GetCountyName
-# from getcountry.pipeline.getzipcode import GetZipCode
+# from getcountry.pipeline.getzipcode import GetZipCodes
 # from getcountry.pipeline.serviceman import ServiceMan
-from .getcountyid import GetCountyID
+from getcounty.pipeline.getcountyid.getcountyid import GetCountyID
 from .getcountyname import GetCountyName
-from .getzipcode import GetZipCode
+from getcounty.pipeline.getzipcodes import GetZipCodes
 from .serviceman import ServiceMan
-
 
 
 
@@ -46,8 +45,8 @@ def soldiers(infile):
         yield ServiceMan(row)
 
 def embelish_soldier(soldier):
-    soldier.zip = GetZipCode(soldier.state, soldier.city)
-    soldier.county_id = GetCountyID(soldier.zip, soldier.state)
+    soldier.zips = GetZipCodes(soldier.state, soldier.city)
+    soldier.county_id = GetCountyID(soldier.zips, soldier.state)
     soldier.county = GetCountyName(soldier.county_id)
     return soldier
 

@@ -67,15 +67,15 @@ class ServiceMan(collections.MutableMapping):
     #--------------------------------------------------------------------------
     # Fields used as output to pipeline functions
     #--------------------------------------------------------------------------
-    zip = DictKeyProperty('ZIP Code')
+    zips = DictKeyProperty('ZIP Codes')
     county_id = DictKeyProperty('Code for Home of Record County')
 #     @VProperty
-#     class zip(object):
-#         """Zip-code. Column not found in raw data."""
+#     class zips(object):
+#         """Zip-codes. Column not found in raw data."""
 #         def _get(self):
-#             return self.data['ZIP Code']
+#             return self.data['ZIP Codes']
 #         def _set(self, value):
-#             self.data['ZIP Code'] = value
+#             self.data['ZIP Codes'] = value
 #     
 #     @VProperty
 #     class county_id(object):

@@ -51,6 +51,20 @@ class ZipCode(object):
         self.timezone = data[5]
         self.dst = data[6]
 
+    #added by OJP
+    def dict(self):
+        return {
+            'zip': self.zip,
+            'city': self.city,
+            'state': self.state,
+            'longitude': self.longitude,
+            'latitude': self.latitude,
+            'timezone': self.timezone,
+            'dst': self.dst
+        }
+    def __repr__(self):
+        return repr(self.dict())
+
 def format_result(zips):
     if len(zips) > 0:
         return [ZipCode(zip) for zip in zips]
