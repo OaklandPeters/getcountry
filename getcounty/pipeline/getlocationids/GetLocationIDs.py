@@ -1,5 +1,8 @@
 import os
 import csv
+import itertools
+import collections
+
 
 #zcta_county_rel_10.csv
 # INput: zip (column 'GEOID')
@@ -10,7 +13,7 @@ import csv
 # Output: 
 
 
-class GetCountyID(object):
+class GetLocationIDs(object):
     # Build database or hash
     datafile = 'zcta_county_rel_10.csv'
     data = list(csv_dict_rows(datafile))
@@ -19,15 +22,19 @@ class GetCountyID(object):
         return cls.__call__(*args, **kwargs)
     @classmethod
     def __call__(cls, zips, state):
-        """Which file does this come from?"""
+        """
+        ?? Is the state name information actually necessary?
+        Dooesn't zip code uniquely determine state?
+        """
         # This needs to be able to accept zip as either single value, or sequence of zips
         zips, state = cls.validate(zips, state)
 
-        nested_rows = (find_location_rows(zip, state) for zip in zips)
+        nested_rows = (find_location_rows(zip) for zip in zips)
         rows = list(flatten(nested_rows))
         
-        county_ids = [row[] for row in rows]
-        state_ids = [rows[] for row in rows]
+        county_ids = [row['COUNTY'] for row in rows]
+        state_ids = [rows['STATE'] for row in rows] #should be only one
+        # CHeck that there is only one state id
 
         return county_ids, state_ids
     
@@ -47,8 +54,7 @@ class GetCountyID(object):
         """Operates on a single zip code."""
         matching_rows = [
             row for row in cls.data
-            if row[''] == state
-            and row[''] == zip
+            and row['GEOID'] == zip
         ]
         
 #==============================================================================
@@ -64,6 +70,10 @@ def csv_dict_rows(infile):
         rows = csv.DictReader(csvfile)
         for row in rows:
             yield row
+            
+def flatten(seqOfSequences):
+    "Flatten one level of nesting"
+    return itertools.chain.from_iterable(seqOfSequences)
 
 if __name__ == "__main__":
     load_hash()

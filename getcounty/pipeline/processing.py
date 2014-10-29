@@ -21,7 +21,7 @@ import os
 # from getcountry.pipeline.getcountyname import GetCountyName
 # from getcountry.pipeline.getzipcode import GetZipCodes
 # from getcountry.pipeline.serviceman import ServiceMan
-from getcounty.pipeline.getcountyid.getcountyid import GetCountyID
+from .getlocationids.GetLocationIDs import GetLocationIDs
 from .getcountyname import GetCountyName
 from getcounty.pipeline.getzipcodes import GetZipCodes
 from .serviceman import ServiceMan
