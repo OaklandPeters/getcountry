@@ -17,13 +17,9 @@ from __future__ import absolute_import
 import csv
 import os
 
-# from getcountry.pipeline.getcountyid import GetCountyID
-# from getcountry.pipeline.getcountyname import GetCountyName
-# from getcountry.pipeline.getzipcode import GetZipCodes
-# from getcountry.pipeline.serviceman import ServiceMan
 from .getlocationids.GetLocationIDs import GetLocationIDs
 from .getcountyname import GetCountyName
-from getcounty.pipeline.getzipcodes import GetZipCodes
+from .getzipcodes import GetZipCodes
 from .serviceman import ServiceMan
 
 
@@ -46,7 +42,7 @@ def soldiers(infile):
 
 def embelish_soldier(soldier):
     soldier.zips = GetZipCodes(soldier.state, soldier.city)
-    soldier.county_id = GetCountyID(soldier.zips, soldier.state)
+    soldier.county_id = GetLocationIDs(soldier.zips, soldier.state)
     soldier.county = GetCountyName(soldier.county_id)
     return soldier
 
