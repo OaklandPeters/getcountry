@@ -3,23 +3,25 @@ import unittest
 import os
 import collections
 
-#Set current directory to being this file
+#Set current directory to being same directory as this file
 fdir, fname = os.path.split(__file__)
 os.chdir(fdir)
+
 from getcounty.pipeline import processing
+from getcounty.shared import csv_io
 
 
+from getcounty.pipeline.getzipcodes import GetZipCodes
+from getcounty.pipeline.getlocationids.GetLocationIDs import GetLocationIDs
+from getcounty.pipeline.getcountyname.GetCountyName import GetCountyName
 
         
         
 class PipelineTests(unittest.TestCase):
-    def setUp(self):
-#         self.infile = os.path.abspath(
-#             os.path.join("..", "input", "dummy_data.csv")
-#         )
-#        assert(os.path.exists(self.infile))
-        self.infile = os.path.join("..", "input", "dummy_data.csv")
-        
+    inname = "dummy_data.csv"
+    infile = os.path.join("..", "input", inname)
+    outfile = os.path.join("..", "output", inname)
+    def setUp(self):        
         self.NotFoundValue = NotImplemented
         self.expected_headers = [
             'Service', 'Component', 'Name  (Last, First M)', 'Rank',
@@ -54,7 +56,7 @@ class PipelineTests(unittest.TestCase):
 
 
     def test_passthrough(self):
-        rows = processing.csv_rows(self.infile)
+        rows = csv_io.read_csv_rows(self.infile)
         headers = rows.next()
         self.assertEqual(headers, self.expected_headers)
         first = rows.next()
@@ -66,30 +68,63 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(first, self.expected_first_dict)
     
     def test_embelish(self):
-        
-        soldiers = processing.embelish(self.infile)
+        soldiers = processing.soldiers(self.infile)
         first = soldiers.next()
 
         self.assert_(isinstance(first, processing.ServiceMan))
+
         # Zip code
+        first.zips = GetZipCodes(first.state, first.city)
         self.assert_(isinstance(first.zips, collections.MutableSequence))
         zips_title = processing.ServiceMan.zips.title
         self.assert_(isinstance(first[zips_title], collections.MutableSequence))
         self.assertEqual(len(first.zips), 1)
         self.assertEqual(first.zips[0].zip, u'98240')
         
-        self.assertEqual(first.county_id, self.NotFoundValue)
-        self.assertEqual(first.county, self.NotFoundValue)
-        
+        # County ID
+        first.county_id, first.state_id = GetLocationIDs(first.zips, first.state)
+        expected_county_id = '073'
+        self.assert_(isinstance(first.county_id, collections.Sequence))
+        self.assertEqual(first.county_id, expected_county_id)
         county_id_title = processing.ServiceMan.county_id.title
+        self.assertEqual(first[county_id_title], expected_county_id)
+
+        # County Name
+        first.county = GetCountyName(first.county_id, first.state_id)
+        expected_county_name = 'Whatcom County'
+        self.assert_(isinstance(first.county, str))
+        self.assertEqual(first.county, expected_county_name)
         county_title = processing.ServiceMan.county.title
+        self.assertEqual(first[county_title], expected_county_name)
 
-        self.assertEqual(first[county_id_title], self.NotFoundValue)
-        self.assertEqual(first[county_title], self.NotFoundValue)
-    
+    def test_output(self):
+        if os.path.exists(self.outfile):
+            os.remove(self.outfile)
+        # Write outfile
+        self.assert_(not os.path.exists(self.outfile))
+        processing.pipeline(self.infile, self.outfile)
+        self.assert_(os.path.exists(self.outfile))
+            
 
-    
+
+#==============================================================================
+#    Local Utility Functions
+#==============================================================================
+def check_unfilled(infile, outfile):
+    if not os.path.exists(outfile):
+        #If output file doesn't exist - make it
+        processing.pipeline(infile, outfile)
+     
+    unfilled = list(
+        processing.find_unfilled(outfile, 'Home of Record County')
+    )
+    print("-----------")
+    print("County of rows with no 'Home of Record County' found:   {0}".format(len(unfilled)))
+
+
+
 if __name__ == "__main__":
     unittest.main()
+    check_unfilled(PipelineTests.infile, PipelineTests.outfile)
 
 

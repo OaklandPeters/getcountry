@@ -69,6 +69,7 @@ class ServiceMan(collections.MutableMapping):
     #--------------------------------------------------------------------------
     zips = DictKeyProperty('ZIP Codes')
     county_id = DictKeyProperty('Code for Home of Record County')
+    state_id = DictKeyProperty('Code for Home of Record State')
 #     @VProperty
 #     class zips(object):
 #         """Zip-codes. Column not found in raw data."""

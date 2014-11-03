@@ -16,22 +16,23 @@ import collections
 from ...extern import rich_core
 from ...extern import unroll
 from ...extern.pyzipcode import ZipCode
-
+from ...shared.errors import NotFoundException
+from ...shared import csv_io
 
 #==============================================================================
 #    Local Utility
 #==============================================================================
-def csv_dict_rows(infile):
-    #State    State ANSI    County ANSI    County Name    ANSI Cl
-    
-    assert(isinstance(infile, basestring))
-    assert(os.path.exists(infile))
-    assert(os.path.isfile(infile))
-    
-    with open(infile, mode='rb') as csvfile:
-        rows = csv.DictReader(csvfile)
-        for row in rows:
-            yield row
+# def csv_dict_rows(infile):
+#     #State    State ANSI    County ANSI    County Name    ANSI Cl
+#     
+#     assert(isinstance(infile, basestring))
+#     assert(os.path.exists(infile))
+#     assert(os.path.isfile(infile))
+#     
+#     with open(infile, mode='rb') as csvfile:
+#         rows = csv.DictReader(csvfile)
+#         for row in rows:
+#             yield row
             
 def flatten(seqOfSequences):
     "Flatten one level of nesting"
@@ -58,19 +59,17 @@ class GetLocationIDs(object):
         # This needs to be able to accept zipcode as either single value, or sequence of zips
         zips, state = cls.validate(zips, state)
 
-        nested_rows = [cls.find_location_rows(zipcode) for zipcode in zips]
-        rows = list(flatten(nested_rows))
+        nested_rows = (cls.find_location_rows(zipcode) for zipcode in zips)
         
-        county_ids = [row['COUNTY'] for row in rows]
-        state_ids = [row['STATE'] for row in rows] #should be only one
-        # CHeck that there is only one state id
-        
-        # If no ids were found for either type -- return Nothing found
-        if (len(state_ids) == 0) or (len(county_ids) == 0):
+        try:
+            first = first_nonempty(nested_rows)
+        except NotFoundException:
             return None, None
         
-        
-        return county_ids, state_ids
+        try:
+            return first['COUNTY'], first['STATE']
+        except KeyError:
+            return None, None
     
     @classmethod
     def validate(cls, zips, state):
@@ -81,9 +80,7 @@ class GetLocationIDs(object):
         if not isinstance(state, basestring):
             raise TypeError("'state' must be a basestring.")
 
-        return zips, state
-    
-    
+        return zips, state    
     
     @classmethod
     @unroll.unroll(tuple)
@@ -96,6 +93,8 @@ class GetLocationIDs(object):
                 yield int(zipcode)
             elif isinstance(zipcode, int):
                 yield zipcode
+            elif zipcode is None:
+                continue
             else:
                 raise TypeError(str.format(
                     "Element #{0} of 'zips' is type {1}, but should be type "
@@ -117,12 +116,8 @@ class GetLocationIDs(object):
         #state_ids should be NonStringSequence
         assert(isinstance(state_ids, collections.Sequence)
                and not isinstance(state_ids, basestring))
-        if len(state_ids) == 0:
-            return state_ids
-        else:
-            first = state_ids[0]
-            for state in state_ids[1:]:
-                
+        return all_equal(state_ids)
+
 
     #--------------------------------------------------------------------------
     #    Build database or hash
@@ -132,13 +127,34 @@ class GetLocationIDs(object):
         os.path.split(__file__)[0],
         'zcta_county_rel_10.csv'
     )
-    data = list(csv_dict_rows(datafile))
+    data = list(csv_io.read_csv_dict_rows(datafile))
 #     @rich_core.ClassProperty
 #     def data(self):
 #         if not hasattr(self, '_data'):
-#             self._data = list(csv_dict_rows(self.datafile))
+#             self._data = list(csv_io.read_csv_dict_rows(self.datafile))
 #         return self._data
 
-        
+
+
+
+#------------------------------------------------------------------------------
+#    Local Utility Functions
+#------------------------------------------------------------------------------
+def all_equal(iterable):
+    try:
+        iterator = iter(iterable)
+        first = next(iterator)
+        return all(first == rest for rest in iterator)
+    except StopIteration:
+        return True
+
+def first_nonempty(iterable):
+    for elm in iterable:
+        if isinstance(elm, collections.Sequence) and not isinstance(elm, basestring):
+            if len(elm) != 0:
+                return elm[0]
+    # No non-empty found
+    raise NotFoundException("No non-empty entry found.")
+
 
 
