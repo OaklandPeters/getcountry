@@ -67,7 +67,7 @@ class PipelineTests(unittest.TestCase):
         first = soldiers.next()
         self.assertEqual(first, self.expected_first_dict)
     
-    def test_embelish(self):
+    def test_pipeline_parts(self):
         soldiers = processing.soldiers(self.infile)
         first = soldiers.next()
 

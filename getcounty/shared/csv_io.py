@@ -6,7 +6,7 @@ def read_csv_rows(infile):
     assert(os.path.exists(infile))
     assert(os.path.isfile(infile))
     
-    with open(infile, mode='rb') as csvfile:
+    with open(infile, mode='rbU') as csvfile:
         rows = csv.reader(csvfile)
         for row in rows:
             yield row
@@ -15,7 +15,7 @@ def get_headers(infile):
     assert(isinstance(infile, basestring))
     assert(os.path.exists(infile))
     assert(os.path.isfile(infile))
-    with open(infile, mode='rb') as csvfile:
+    with open(infile, mode='rbU') as csvfile:
         rows = csv.reader(csvfile)
         headers = rows.next()
     return headers
@@ -26,7 +26,7 @@ def read_csv_dict_rows(infile):
     assert(os.path.exists(infile))
     assert(os.path.isfile(infile))
     
-    with open(infile, mode='rb') as csvfile:
+    with open(infile, mode='rbU') as csvfile:
         rows = csv.DictReader(csvfile)
         for row in rows:
             yield row

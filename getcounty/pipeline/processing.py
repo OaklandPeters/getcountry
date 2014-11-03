@@ -99,4 +99,6 @@ def find_unfilled(filepath, header):
         if row[header] in ['', None, 'None']:
             yield row
 
+def count_unfilled(filepath, header):
+    return len(list(find_unfilled(filepath, header)))
 
